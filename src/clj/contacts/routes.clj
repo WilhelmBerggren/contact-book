@@ -6,12 +6,6 @@
                                        update-contact
                                        delete-contact]]))
 
-(def ping-routes 
-  ["/ping" {:name :ping
-            :get (fn [req]
-                   {:status 200
-                    :body {:ping "pong"}})}])
-
 (def contact-routes
   ["/contacts" 
    ["/" {:get get-contacts

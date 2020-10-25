@@ -1,21 +1,47 @@
 (ns contacts.db
-  (:require [hugsql.core :as hugsql]))
+  (:require [honeysql.core :as sql]
+            [honeysql.format :refer [comma-join format-clause to-sql]]
+            [next.jdbc :as jdbc]))
 
-(def config 
-  {:classname "org.postgresql.Driver"
-   :subprotocol "postgresql"
-   :subname "//localhost:5432/clj_contacts"
+(def config
+  {:dbname "clj_contacts"
+   :dbtype "postgresql"
    :user "postgres"
    :password "postgres"})
 
-(hugsql.core/def-db-fns "contacts.sql")
+(def ds (jdbc/get-datasource
+         config))
 
-(comment
-  config
-  (create-contacts-table config)
-  (get-contacts config)
-  (delete-contact-by-id config {:id 2})
-  (get-contact-by-id config {:id 1})
-  (insert-contact config {:first-name "anti"
-                          :last-name "wilhlem"
-                          :email "anti@wil.helm"}))
+(defn run-query [query] (jdbc/execute! ds (sql/format (sql/build query))))
+
+(defmethod
+  format-clause
+  :returning
+  [[_ fields] _]
+  (str "RETURNING " (comma-join (map to-sql fields))))
+
+(defn get-contacts []
+  (run-query {:select :*
+              :from :contacts}))
+
+(defn get-contact-by-id [id]
+  (run-query {:select [:*]
+              :from :contacts
+              :where [:= :id id]}))
+
+(defn insert-contact [contact]
+  (run-query {:insert-into :contacts
+              :values [contact]
+              :returning :id}))
+
+(defn update-contact-by-id [contact]
+  (run-query {:update :contacts
+              :set (select-keys contact [:first-name :last-name :id])
+              :where [:= :id (:id contact)]}))
+
+(defn delete-contact-by-id [contact]
+  (run-query {:delete-from :contacts
+              :where [:= :id (:id contact)]}))
+
+(jdbc/execute! ds (sql/format {:select [:*]
+                               :from [:contacts]}))

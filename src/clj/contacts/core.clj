@@ -12,7 +12,7 @@
                                           coerce-response-middleware]]
             [reitit.coercion.schema]
             [muuntaja.core :as m]
-            [contacts.routes :refer [ping-routes contact-routes]]))
+            [contacts.routes :refer [contact-routes]]))
 
 (defonce server (atom nil))
 
@@ -20,7 +20,6 @@
   (ring/ring-handler
    (ring/router
     [["/api"
-      ping-routes
       contact-routes]]
     {:data {:coercion reitit.coercion.schema/coercion
             :muuntaja m/instance
