@@ -1,0 +1,8 @@
+/.cpcache
+/node_modules
+/pgdata
+/.calva
+/.clj-kondo
+/resources/public/js
+/resources/public/css
+/.shadow-cljs
